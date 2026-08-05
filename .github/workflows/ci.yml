@@ -1,0 +1,45 @@
+name: ci
+on:
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: >-
+    ${{ github.event_name == 'merge_group'
+        && 'prod-manifest'
+        || format('ci-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.event_name != 'merge_group' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: dump event payload
+        run: echo '${{ toJSON(github.event) }}'
+
+      - name: fast-path skip probe
+        if: github.event_name == 'merge_group'
+        run: |
+          HEAD_REF="${{ github.event.merge_group.head_ref }}"
+          BASE_SHA="${{ github.event.merge_group.base_sha }}"
+          PR=$(echo "$HEAD_REF" | sed -E 's#.*/pr-([0-9]+)-.*#\1#')
+          PR_HEAD=$(gh pr view "$PR" --json headRefOid -q .headRefOid)
+          MB=$(git merge-base "$PR_HEAD" "$BASE_SHA")
+          echo "pr=$PR base=$BASE_SHA merge_base=$MB"
+          if git diff --quiet "$MB" "$BASE_SHA" -- dbt/; then
+            echo "SKIP: main unchanged under dbt/"
+          else
+            echo "BUILD: main changed under dbt/"
+          fi
+
+      - name: simulate work
+        run: sleep "$(cat duration 2>/dev/null || echo 60)"
+
+      - name: fail on demand
+        run: test ! -f FAIL
