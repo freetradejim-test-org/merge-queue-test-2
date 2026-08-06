@@ -42,4 +42,5 @@ jobs:
         run: sleep "$(cat duration 2>/dev/null || echo 60)"
 
       - name: fail on demand
+        if: github.event_name == 'merge_group'
         run: test ! -f FAIL
