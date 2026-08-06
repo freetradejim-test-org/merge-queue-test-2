@@ -3,3 +3,8 @@
 
 Queued behind branch-2. Branched from main before branch-2 merged,
 so its queue branch base should contain branch-2 commit.
+
+## Scenario 4, good PR
+
+Queued behind the failing PR. Should still merge after that one is
+ejected, rebuilt on a base that does not contain it.
