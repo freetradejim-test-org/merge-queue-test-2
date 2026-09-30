@@ -4,12 +4,8 @@ on:
   merge_group:
 
 concurrency:
-  group: >-
-    ${{ github.event_name == 'merge_group'
-        && 'prod-manifest'
-        || format('ci-{0}', github.ref) }}
-  queue: ${{ github.event_name == 'merge_group' && 'max' || 'single' }}
-  cancel-in-progress: ${{ github.event_name != 'merge_group' }}
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
