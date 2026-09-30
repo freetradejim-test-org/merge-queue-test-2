@@ -8,6 +8,7 @@ concurrency:
     ${{ github.event_name == 'merge_group'
         && 'prod-manifest'
         || format('ci-{0}', github.ref) }}
+  queue: max
   cancel-in-progress: ${{ github.event_name != 'merge_group' }}
 
 jobs:
