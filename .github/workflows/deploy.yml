@@ -3,12 +3,18 @@ on:
   push:
     branches: [main]
 
-concurrency:
-  group: prod-manifest
-  cancel-in-progress: false
-
 jobs:
-  deploy:
+  # Holds the deploy back so the next queue check reaches prod-manifest first.
+  delay:
     runs-on: ubuntu-latest
     steps:
-      - run: sleep 30
+      - run: sleep 20
+
+  deploy:
+    needs: delay
+    runs-on: ubuntu-latest
+    concurrency:
+      group: prod-manifest
+      cancel-in-progress: false
+    steps:
+      - run: sleep 120
