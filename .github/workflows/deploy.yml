@@ -2,13 +2,16 @@ name: deploy
 on:
   push:
     branches: [main]
+  pull_request:
 
 concurrency:
   group: ${{ github.event_name }}-${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: false
+  queue: ${{ github.event_name == 'push' && 'max' || 'single' }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - run: sleep 120
